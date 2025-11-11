@@ -1,20 +1,116 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Warehouse.Desktop.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:c="using:Warehouse.Desktop.Components"
+        xmlns:m="using:Warehouse.Models"
+
         x:Class="Warehouse.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
+
         Icon="/Assets/avalonia-logo.ico"
-        Title="Warehouse.Desktop">
+        Title="Warehouse">
+
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="Width" Value="125" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+
+            <Style Selector="^:pointerover /template/ ContentPresenter">
+                <Setter Property="CornerRadius" Value="15" />
+                <Setter Property="Foreground" Value="White" />
+            </Style>
+
+            <Style Selector="^.save">
+                <Setter Property="Background" Value="Green" />
+
+                <Style Selector="^:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="DarkGreen" />
+                </Style>
+            </Style>
+            <Style Selector="^.delete">
+                <Setter Property="Background" Value="Red" />
+
+                <Style Selector="^:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="DarkRed" />
+                </Style>
+            </Style>
+            <Style Selector="^.clear">
+                <Setter Property="Background" Value="Orange" />
+
+                <Style Selector="^:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="DarkOrange" />
+                </Style>
+            </Style>
+        </Style>
+    </Window.Styles>
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Window.Resources>
+        <DataTemplate x:Key="Template_Product"
+                      DataType="{x:Type TypeName=m:Product}">
+            <TextBlock>
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="#{0}: {1} {2} {3} ({4} руб.)">
+                        <Binding Path="Id" />
+                        <Binding Path="Name" />
+                        <Binding Path="ProductTypeName"/>
+                        <Binding Path="SupplierName"/>
+                        <Binding Path="CostPrice" />
+
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Загрузить"
+                      Command="{Binding Path=LoadCommand}" />
+        </Menu>
+        <StackPanel Orientation="Horizontal"
+                    DockPanel.Dock="Top">
+            <c:InputComponent Label="Поиск"
+                              Value="{Binding Path=SearchProduct, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*, 2*">
+            <ListBox ItemsSource="{Binding Path=Products}"
+                     ItemTemplate="{StaticResource ResourceKey=Template_Product}"
+                     SelectedItem="{Binding Path=SelectedProduct, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     SelectionMode="Single"
+                     Grid.Column="0" />
+
+            <StackPanel Grid.Column="1">
+                <c:InputComponent Label="ID"
+                                  Value="{Binding Path=Id, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                <c:InputComponent Label="Название"
+                                  Value="{Binding Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <c:InputListComponent Label="Тип"
+                                      Value="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsList="{Binding Path=ProductTypes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <c:InputListComponent Label="Поставщик"
+                                      Value="{Binding Supplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsList="{Binding Path=Suppliers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <c:InputComponent Label="Цена"
+                                  Value="{Binding Path=Price, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Сохранить"
+                            Command="{Binding Path=SaveCommand}"
+                            Classes="save" />
+                    <Button Content="Удалить"
+                            Command="{Binding Path=DeleteCommand}"
+                            Classes="delete" />
+                    <Button Content="Очистить"
+                            Command="{Binding Path=ClearCommand}"
+                            Classes="clear" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
 
 </Window>

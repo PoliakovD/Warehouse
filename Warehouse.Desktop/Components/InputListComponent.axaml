@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+              x:Class="Warehouse.Desktop.Components.InputListComponent"
+              x:Name="Component">
+    <Grid ColumnDefinitions="*, 2*"
+          DataContext="{Binding ElementName=Component}">
+        <Label Content="{Binding Path=Label, Mode=OneWay}"
+               Grid.Column="0"/>
+        <AutoCompleteBox FilterMode="ContainsCaseSensitive"
+                         Grid.Column="1"
+                         Text="{Binding Value, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                         ItemsSource="{Binding Path=ItemsList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </Grid>
+</UserControl>

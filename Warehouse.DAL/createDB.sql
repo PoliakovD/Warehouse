@@ -47,39 +47,107 @@ FROM table_products
 JOIN table_suppliers ON table_products.supplier_id = table_suppliers.id;
 
 
--- Пример заполнения данными
--- Типы товаров
+
+TRUNCATE table_delivery_items, table_deliveries, table_products, table_suppliers, table_product_types CASCADE;
+
+-- === ТИПЫ ТОВАРОВ (30) ===
 INSERT INTO table_product_types (name)
-VALUES ('Fruit'),
-       ('Vegetable'),
-       ('Juice'),
-       ('Dried Fruit');
+VALUES
+    ('Fruit'),
+    ('Vegetable'),
+    ('Juice'),
+    ('Dried Fruit'),
+    ('Dairy'),
+    ('Bakery'),
+    ('Meat'),
+    ('Seafood'),
+    ('Pasta'),
+    ('Canned Food'),
+    ('Frozen Food'),
+    ('Snacks'),
+    ('Beverages'),
+    ('Coffee'),
+    ('Tea'),
+    ('Sweets'),
+    ('Condiments'),
+    ('Cleaning Supplies'),
+    ('Personal Care'),
+    ('Pet Food'),
+    ('Cereals'),
+    ('Nuts'),
+    ('Herbs'),
+    ('Spices'),
+    ('Cheese'),
+    ('Yogurt'),
+    ('Eggs'),
+    ('Butter'),
+    ('Milk'),
+    ('Honey');
 
--- Поставщики
+-- === ПОСТАВЩИКИ (30) ===
 INSERT INTO table_suppliers (name)
-VALUES ('Fresh Farm'),
-       ('Tropical Goods Inc.'),
-       ('Local Market Co.');
+VALUES
+    ('Fresh Farm'),
+    ('Tropical Goods Inc.'),
+    ('Local Market Co.'),
+    ('Green Valley Distributors'),
+    ('Organic Harvest Ltd'),
+    ('Sunrise Provisions'),
+    ('Alpine Dairy Group'),
+    ('Ocean Fresh Seafood'),
+    ('Golden Grain Mills'),
+    ('Prime Meat Packers'),
+    ('Sweet Tooth Confectionery'),
+    ('Spice Route Traders'),
+    ('Herb & Spice Co.'),
+    ('Daily Bread Bakers'),
+    ('Nuts & More'),
+    ('Canned Classics'),
+    ('Frozen Delights'),
+    ('Beverage Masters'),
+    ('Coffee Hub'),
+    ('Tea Time Imports'),
+    ('Dairy Direct'),
+    ('Eggcellent Farms'),
+    ('Butterfield Dairy'),
+    ('Honeycomb Apiaries'),
+    ('Pet Pantry'),
+    ('Clean Home Supplies'),
+    ('Beauty Essentials'),
+    ('Farm to Table'),
+    ('Quick Snacks Co.'),
+    ('Milk Run Suppliers');
 
--- Поставка
+-- === ТОВАРЫ (30) ===
+-- Используем подзапросы для связи с типами и поставщиками
+INSERT INTO table_products (name, product_type_id, supplier_id, cost_price)
+SELECT name,
+       (SELECT id FROM table_product_types ORDER BY RANDOM() LIMIT 1),
+       (SELECT id FROM table_suppliers ORDER BY RANDOM() LIMIT 1),
+       ROUND((RANDOM() * 100 + 5)::NUMERIC, 2)
+FROM (
+         VALUES
+             ('Apple'), ('Banana'), ('Carrot'), ('Orange Juice'), ('Whole Wheat Bread'),
+             ('Cheddar Cheese'), ('Salmon Fillet'), ('Spaghetti'), ('Tuna Can'), ('Frozen Pizza'),
+             ('Potato Chips'), ('Cola'), ('Espresso Beans'), ('Green Tea'), ('Chocolate Bar'),
+             ('Ketchup'), ('Laundry Detergent'), ('Shampoo'), ('Dog Food'), ('Oatmeal'),
+             ('Almonds'), ('Basil'), ('Cumin'), ('Greek Yogurt'), ('Free-Range Eggs'),
+             ('Salted Butter'), ('Whole Milk'), ('Acacia Honey'), ('Cat Litter'), ('Energy Drink')
+     ) AS t(name);
+
+-- === ПОСТАВКИ (30) ===
+-- Генерируем 30 поставок с рандомной датой за последние 60 дней
 INSERT INTO table_deliveries (supplier_id, delivery_date)
-VALUES ((SELECT id FROM table_suppliers WHERE name = 'Fresh Farm'), '2025-04-01 10:00:00'),
-       ((SELECT id FROM table_suppliers WHERE name = 'Tropical Goods Inc.'), '2025-04-02 14:30:00');
+SELECT
+    (SELECT id FROM table_suppliers ORDER BY RANDOM() LIMIT 1),
+    NOW() - (RANDOM() * 60 || ' days')::INTERVAL
+FROM generate_series(1, 30);
 
--- Товары
-INSERT INTO table_products (name, product_type_id, cost_price, supplier_id)
-VALUES ('Apple', (SELECT id FROM table_product_types WHERE name = 'Fruit'), 30.00,
-        (SELECT id FROM table_suppliers WHERE table_suppliers.name = 'Fresh Farm')),
-       ('Banana', (SELECT id FROM table_product_types WHERE name = 'Fruit'), 45.50,
-        (SELECT id FROM table_suppliers WHERE table_suppliers.name = 'Tropical Goods Inc.')),
-       ('Carrot', (SELECT id FROM table_product_types WHERE name = 'Vegetable'), 20.00,
-        (SELECT id FROM table_suppliers WHERE table_suppliers.name = 'Fresh Farm')),
-       ('Orange Juice', (SELECT id FROM table_product_types WHERE name = 'Juice'), 80.00,
-        (SELECT id FROM table_suppliers WHERE table_suppliers.name = 'Tropical Goods Inc.'));
-
--- Состав поставок
+-- === СОСТАВ ПОСТАВОК (30) ===
+-- Каждая поставка — случайный товар и количество
 INSERT INTO table_delivery_items (delivery_id, product_id, quantity)
-VALUES (1, (SELECT id FROM table_products WHERE name = 'Apple'), 100),
-       (1, (SELECT id FROM table_products WHERE name = 'Carrot'), 200),
-       (2, (SELECT id FROM table_products WHERE name = 'Banana'), 150),
-       (2, (SELECT id FROM table_products WHERE name = 'Orange Juice'), 50);
+SELECT
+    (SELECT id FROM table_deliveries ORDER BY RANDOM() LIMIT 1),
+    (SELECT id FROM table_products ORDER BY RANDOM() LIMIT 1),
+    (RANDOM() * 50 + 1)::INT
+FROM generate_series(1, 30);
